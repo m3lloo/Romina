@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>for {{ birthday_person }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" sizes="any">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+  <audio id="audioPlayer" preload="none"></audio>
+
+  <!-- ================= NAV ================= -->
+  <nav class="site-nav" id="siteNav">
+    <a class="nav-brand" href="#top" data-scroll-to="top">for <em>{{ birthday_person }}</em></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
+    <div class="nav-links" id="navLinks">
+      <a href="#letter" data-scroll-to="letter">Letter</a>
+      <a href="#photos" data-scroll-to="photos">Photos</a>
+      <a href="#chapters" data-scroll-to="chapters">Chapters</a>
+      <a href="#music" data-scroll-to="music">Playlist</a>
+      <a href="#guestbook" data-scroll-to="guestbook">Guestbook</a>
+    </div>
+  </nav>
+  <div class="progress-line" id="progressLine"></div>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="top">
+    <div class="hero-glow g1"></div>
+    <div class="hero-glow g2"></div>
+    <p class="hero-eyebrow">a small corner of the internet, just for</p>
+    <h1 class="hero-name">{{ birthday_person }}</h1>
+    <p class="hero-sub">Happy birthday — everything below was put together with you in mind. Take your time with it.</p>
+    <button class="scroll-cue" data-scroll-to="letter">
+      <span>begin</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 4v15M5 12l7 7 7-7" />
+      </svg>
+    </button>
+  </section>
+
+  <!-- ================= THE STORY ================= -->
+  <main class="thread" id="thread">
+
+    <!-- ---- Letter ---- -->
+    <section id="letter" class="story-section">
+      <div class="section-marker">I</div>
+      <div class="section-body">
+        <p class="section-eyebrow">chapter one</p>
+        <h2 class="section-title">The Letter</h2>
+        <div class="letter-card">
+          <p class="letter-to">To {{ birthday_person }},</p>
+          <p class="letter-text">{{ birthday_note }}</p>
+          <p class="letter-sign">{{ sender_name }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- Photos ---- -->
+    <section id="photos" class="story-section alt-bg">
+      <div class="section-marker">II</div>
+      <div class="section-body">
+        <p class="section-eyebrow">chapter two</p>
+        <h2 class="section-title">Photos</h2>
+        <div class="gallery">
+          {% for photo in photos %}
+          <figure class="gallery-card">
+            <div class="gallery-frame">
+              <img src="{{ url_for('static', filename='images/' + photo.file) }}" alt="{{ photo.caption }}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <span class="gallery-empty" style="display:none;">a memory waiting to be added</span>
+            </div>
+            <figcaption>{{ photo.caption }}</figcaption>
+          </figure>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- Chapters (relationship timeline) ---- -->
+    <section id="chapters" class="story-section">
+      <div class="section-marker">III</div>
+      <div class="section-body">
+        <p class="section-eyebrow">chapter three</p>
+        <h2 class="section-title">Our Chapters</h2>
+        <div class="era-list">
+          {% for era in eras %}
+          <div class="era-row">
+            <span class="era-tag">{{ era.tag }}</span>
+            <h4>{{ era.title }}</h4>
+            <p>{{ era.text }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- Music ---- -->
+    <section id="music" class="story-section alt-bg">
+      <div class="section-marker">IV</div>
+      <div class="section-body">
+        <p class="section-eyebrow">chapter four</p>
+        <h2 class="section-title">The Playlist</h2>
+
+        <div class="player-card">
+          <div class="player-top">
+            <div class="player-disc" id="playerVinyl"></div>
+            <div>
+              <div class="player-title" id="trackTitle">{{ playlist[0].title if playlist else "No songs yet" }}</div>
+              <div class="player-artist" id="trackArtist">{{ playlist[0].artist if playlist else "Add MP3s to static/music/" }}</div>
+            </div>
+          </div>
+
+          <div class="player-progress">
+            <span id="timeElapsed">0:00</span>
+            <input type="range" id="progressBar" min="0" max="100" step="0.1" value="0" aria-label="Playback progress">
+            <span id="timeDuration">0:00</span>
+          </div>
+
+          <div class="player-controls">
+            <button class="player-btn" id="prevBtn" aria-label="Previous track">&#9664;&#9664;</button>
+            <button class="player-btn play-btn" id="playBtn" aria-label="Play or pause">
+              <span class="icon-play">&#9654;</span><span class="icon-pause" style="display:none;">&#10073;&#10073;</span>
+            </button>
+            <button class="player-btn" id="nextBtn" aria-label="Next track">&#9654;&#9654;</button>
+          </div>
+
+          <div class="player-volume">
+            <span>volume</span>
+            <input type="range" id="volumeBar" min="0" max="100" step="1" value="80" aria-label="Volume">
+          </div>
+
+          <ul class="playlist" id="playlistList">
+            {% for song in playlist %}
+            <li data-index="{{ loop.index0 }}" data-src="{{ url_for('static', filename='music/' + song.file) }}"
+              data-title="{{ song.title }}" data-artist="{{ song.artist }}" class="{% if loop.first %}active{% endif %}">
+              <span>{{ song.title }}</span><span>{{ song.artist }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- Guestbook ---- -->
+    <section id="guestbook" class="story-section">
+      <div class="section-marker">V</div>
+      <div class="section-body">
+        <p class="section-eyebrow">chapter five</p>
+        <h2 class="section-title">Guestbook</h2>
+        <p class="section-lede">Wishes from the people who love {{ birthday_person }}.</p>
+        <a class="btn-primary" href="/greet" target="_blank" rel="noopener">Leave a wish</a>
+        <div class="guestbook-list" id="messagesContainer">
+          <div class="msg-card empty">messages will appear here as people share their wishes</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="story-footer">
+    <p>Made with care by {{ sender_name }}.</p>
+    <button class="to-top" data-scroll-to="top">Back to top</button>
+  </footer>
+
+  <script>
+    window.__PLAYLIST_HAS_SONGS__ = {{ ((playlist|length) > 0) | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/os.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

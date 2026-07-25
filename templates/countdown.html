@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>for {{ birthday_person }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" sizes="any">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="countdown-page">
+  <div class="countdown-glow g1"></div>
+  <div class="countdown-glow g2"></div>
+
+  <div class="countdown-card">
+    <p class="countdown-eyebrow">a little something for</p>
+    <h1 class="countdown-name">{{ birthday_person }}</h1>
+    <p class="countdown-status" id="countdownHint">time left until it unlocks</p>
+    <p class="countdown-status" style="margin-top:-28px; opacity:.55;">unlocks {{ target_date_label }}</p>
+
+    <div class="countdown-grid" id="countdownGrid">
+      <div class="countdown-unit"><span class="num" id="cdDays">00</span><span class="label">days</span></div>
+      <div class="countdown-unit"><span class="num" id="cdHours">00</span><span class="label">hours</span></div>
+      <div class="countdown-unit"><span class="num" id="cdMinutes">00</span><span class="label">minutes</span></div>
+      <div class="countdown-unit"><span class="num" id="cdSeconds">00</span><span class="label">seconds</span></div>
+    </div>
+
+    <p class="countdown-tagline" id="countdownNote">a little tradition, every year &mdash; see you at zero<span class="countdown-cursor">_</span></p>
+  </div>
+
+  <script>
+    window.__TARGET_DATE_ISO__ = "{{ target_date_iso }}";
+  </script>
+  <script src="{{ url_for('static', filename='js/countdown.js') }}"></script>
+</body>
+
+</html>

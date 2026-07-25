@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave a wish for {{ birthday_person }}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" sizes="any">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="greet-page">
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
+  <div class="greet-card">
+    <a class="greet-close" href="/" aria-label="Close">&times;</a>
+
+    <p class="greet-eyebrow">leave a wish for</p>
+    <h1 class="greet-name">{{ birthday_person }}</h1>
+
+    <div id="messageFormWrap">
+      <p class="greet-copy">Write a note &mdash; it'll show up on the guestbook for {{ birthday_person }} to read.</p>
+
+      <form id="messageForm" class="greet-form" novalidate>
+        <label for="senderName">Your name</label>
+        <input type="text" id="senderName" name="sender_name" placeholder="From..." maxlength="100" autocomplete="name">
+        <span class="field-hint">Leave blank to stay anonymous</span>
+
+        <label for="messageText">Your message</label>
+        <textarea id="messageText" name="message" placeholder="Share what {{ birthday_person }} means to you..."
+          required maxlength="500" aria-describedby="charCount"></textarea>
+        <span class="char-count" id="charCount">0 / 500</span>
+
+        <button type="submit" class="btn-primary btn-block submit-btn" id="submitBtn">Send my wish</button>
+        <div id="formMessage" class="form-message" style="display:none;" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div class="greet-success" id="greetSuccess" style="display:none;">
+      <div class="success-icon" aria-hidden="true">&#9825;</div>
+      <h2>your wish was sent</h2>
+      <p>{{ birthday_person }} will see your message on the guestbook.<br>Thank you for the love.</p>
+      <div class="success-actions">
+        <button type="button" class="btn-ghost" id="sendAnotherBtn">Write another</button>
+        <a class="btn-ghost" href="/">Back home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/effects.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/greet.js') }}"></script>
+</body>
+
+</html>
