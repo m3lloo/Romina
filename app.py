@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, render_template, request, session
+from flask import Flask, jsonify, redirect, render_template, request
 
 from services.messages import MessageStore, MessageStoreError
 
@@ -82,7 +82,7 @@ class Settings:
             supabase_key=os.getenv("SUPABASE_KEY"),
             supabase_service_key=os.getenv("SUPABASE_SERVICE_KEY"),
             auto_approve_messages=os.getenv(
-                "AUTO_APPROVE_MESSAGES", "0") == "1",
+                "AUTO_APPROVE_MESSAGES", "1") == "1",
             target_date_label=os.getenv("TARGET_DATE_LABEL", "July 26th"),
             # This is the secret that unlocks the main site. Keep it out of
             # source control (.env only) and only ever share it embedded in
@@ -148,9 +148,6 @@ WISHES = [
 app = Flask(__name__)
 settings = Settings.from_env()
 app.secret_key = settings.secret_key
-# Keep the "unlocked" cookie valid for a long time so Romaigne doesn't have
-# to re-enter the link every visit once she's opened it once.
-app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
 
 if not settings.access_key:
     app.logger.warning(
@@ -166,26 +163,16 @@ messages = MessageStore(
     settings.supabase_service_key,
 )
 
-ACCESS_SESSION_KEY = "romaigne_unlocked"
-
 
 def has_site_access() -> bool:
-    """True once the visitor has proven they hold the private key.
+    """True only when this exact request carries the correct ?key=...
 
-    Checked first via the signed session cookie (so returning visitors,
-    i.e. Romaigne, don't need the key in the URL every time), then via a
-    ?key=... query parameter on this request (which also sets the cookie
-    for next time).
+    No session or cookie is used to "remember" a previous unlock — every
+    visit is checked fresh. That means opening the bare domain (or an old
+    bookmark without ?key=) always lands on /greet, even on a browser
+    that has used the private link before.
     """
-    if session.get(ACCESS_SESSION_KEY):
-        return True
-
-    if settings.access_key and request.args.get("key") == settings.access_key:
-        session[ACCESS_SESSION_KEY] = True
-        session.permanent = True
-        return True
-
-    return False
+    return bool(settings.access_key) and request.args.get("key") == settings.access_key
 
 
 def now_in_app_timezone() -> datetime:

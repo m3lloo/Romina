@@ -76,7 +76,7 @@ Copy `.env.example` to `.env` and fill in the values:
 APP_TIMEZONE=Asia/Manila
 TARGET_DATE_LABEL=July 26th
 FLASK_DEBUG=1
-AUTO_APPROVE_MESSAGES=0
+AUTO_APPROVE_MESSAGES=1
 SUPABASE_URL=
 SUPABASE_KEY=
 SUPABASE_SERVICE_KEY=
@@ -84,7 +84,7 @@ ROMAIGNE_ACCESS_KEY=pick-a-long-random-string-here
 FLASK_SECRET_KEY=another-long-random-string
 ```
 
-- `AUTO_APPROVE_MESSAGES=0` keeps new messages hidden until approved.
+- `AUTO_APPROVE_MESSAGES=1` publishes every new message immediately.
 - `ROMAIGNE_ACCESS_KEY` is the private unlock key for the main birthday page.
 - `FLASK_SECRET_KEY` should be a fixed secret in production.
 
