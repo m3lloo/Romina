@@ -34,7 +34,7 @@ APP_TIMEZONE = load_timezone()
 # The site celebrates this day every single year, not just once.
 # Change these two numbers if her birthday isn't July 26th.
 BIRTHDAY_MONTH = 7
-BIRTHDAY_DAY = 26
+BIRTHDAY_DAY = 27
 
 
 def get_target_date(reference: datetime) -> datetime:
