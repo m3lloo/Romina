@@ -34,7 +34,7 @@ APP_TIMEZONE = load_timezone()
 # The site celebrates this day every single year, not just once.
 # Change these two numbers if her birthday isn't July 26th.
 BIRTHDAY_MONTH = 7
-BIRTHDAY_DAY = 26
+BIRTHDAY_DAY = 28
 
 
 def get_target_date(reference: datetime) -> datetime:
@@ -72,6 +72,7 @@ class Settings:
     auto_approve_messages: bool
     target_date_label: str
     access_key: str | None
+    preview_key: str | None
     secret_key: str
 
     @classmethod
@@ -88,6 +89,10 @@ class Settings:
             # source control (.env only) and only ever share it embedded in
             # the private link below, never on its own.
             access_key=os.getenv("ROMAIGNE_ACCESS_KEY"),
+            # Your own always-unlocked link. Different from ROMAIGNE_ACCESS_KEY
+            # so you can preview the main site any day, countdown or not,
+            # while the link you actually share still respects the gate.
+            preview_key=os.getenv("ROMAIGNE_PREVIEW_KEY"),
             # Used to cryptographically sign the "I've unlocked this before"
             # cookie so it can't be faked or guessed. Set a fixed value in
             # .env in production, otherwise a new random one is generated
@@ -157,6 +162,13 @@ if not settings.access_key:
         "link like https://yourdomain.com/?key=<the-key>."
     )
 
+if not settings.preview_key:
+    app.logger.warning(
+        "ROMAIGNE_PREVIEW_KEY is not set — there is no always-unlocked "
+        "preview link available. Set ROMAIGNE_PREVIEW_KEY in your .env to "
+        "generate one, e.g. https://yourdomain.com/?key=<the-preview-key>."
+    )
+
 messages = MessageStore(
     settings.supabase_url,
     settings.supabase_key,
@@ -175,6 +187,16 @@ def has_site_access() -> bool:
     return bool(settings.access_key) and request.args.get("key") == settings.access_key
 
 
+def has_preview_access() -> bool:
+    """True only when this request carries the owner's preview key.
+
+    Distinct from has_site_access(): this always unlocks the main site,
+    countdown or not, birthday or not. Meant only for you to preview the
+    page early — never share this key the way you'd share the access key.
+    """
+    return bool(settings.preview_key) and request.args.get("key") == settings.preview_key
+
+
 def now_in_app_timezone() -> datetime:
     """Return the current time in the app's configured timezone."""
     return datetime.now(APP_TIMEZONE)
@@ -187,9 +209,15 @@ def is_unlocked() -> bool:
 
 @app.route("/")
 def index():
+    # Owner-only bypass: always shows the main site, any day, countdown
+    # or not. Requires the separate ROMAIGNE_PREVIEW_KEY, never the
+    # access key you'd share with anyone else.
+    if has_preview_access():
+        return render_template("index.html", **CONFIG)
+
     if not has_site_access():
-        # No valid key/cookie: send them to the public guestbook page
-        # instead of showing anything about the main site.
+        # No valid key: send them to the public guestbook page instead
+        # of showing anything about the main site.
         return redirect("/greet")
 
     now = now_in_app_timezone()
